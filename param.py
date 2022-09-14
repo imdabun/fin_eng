@@ -1,7 +1,7 @@
 """
 param.py
 
-Param Class Implementation
+Param Class
 Gan Yang ©2022
 """
 
@@ -15,15 +15,27 @@ class Param:
         self._dependents = []
         self._dirty = True
 
+    @property
+    def val(self):
+        return self._val
+
+    @val.setter
+    def val(self, value):
+        self._val = value
+        self.make_dirty()
+        self._dirty = False
+
     def add_dependent(self, dependent):
+        """Register downstream node that has this as a dependency."""
         self._dependents.append(dependent)
 
     def make_dirty(self):
+        """Turn this node and all downstream nodes dirty."""
+        if self._dirty: return
         self._dirty = True
         for dependent in self._dependents:
             dependent.make_dirty()
 
-    def val(self):
-        if self._dirty:
-            self._dirty = False
-        return self._val
+    def eval(self):
+        """Evaluate parameter."""
+        return self.val
