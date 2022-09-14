@@ -74,7 +74,8 @@ class EulerSimulation:
         self.nodes = [last]
         self.Z = np.random.normal(size=[T, n_sims])
         for i in range(T):
-            self.nodes.append(EulerParam(mu, v, last, i+1, dt, self.Z[i, 0]))
+            last = EulerParam(mu, v, last, i+1, dt, self.Z[i, 0])
+            self.nodes.append(last)
         self.results = np.empty([T+1, n_sims])
         self.results[0, :] = S_0.eval()
 
