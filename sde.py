@@ -23,7 +23,9 @@ class EulerParam(Param):
         dt      A constant param representing step size
         """
         self._mu  = mu
+        mu.add_dependents(self)
         self._v   = v
+        v.add_dependents(self)
         S_t.add_dependent(self)
         self._S_t = S_t
         self._t   = t
@@ -50,7 +52,7 @@ class EulerParam(Param):
         # if not, calculate using SDE
         S_t = self._S_t.eval()
         dt = self._dt.eval()
-        self._last = S_t + self._mu(S_t, self._t) * dt + self._v(S_t, self._t) * math.sqrt(dt) * self._z
+        self._last = S_t + self._mu[S_t, self._t] * dt + self._v[S_t, self._t] * math.sqrt(dt) * self._z
         self._dirty = False
         return self._last
 
@@ -67,7 +69,7 @@ class LogEulerParam(EulerParam):
         # if not, calculate using SDE
         S_t = self._S_t.eval()
         dt = self._dt.eval()
-        self._last = S_t * np.exp(self._mu(S_t, self._t) * dt + self._v(S_t, self._t) * math.sqrt(dt) * self._z)
+        self._last = S_t * np.exp(self._mu[S_t, self._t] * dt + self._v[S_t, self._t] * math.sqrt(dt) * self._z)
         self._dirty = False
         return self._last
 

@@ -23,7 +23,6 @@ class Param:
     def val(self, value):
         self._val = value
         self.make_dirty()
-        self._dirty = False
 
     def add_dependent(self, dependent):
         """Register downstream node that has this as a dependency."""
@@ -38,4 +37,5 @@ class Param:
 
     def eval(self):
         """Evaluate parameter."""
+        self._dirty = False
         return self.val
