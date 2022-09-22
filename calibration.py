@@ -2,12 +2,14 @@
 calibration.py
 
 Parameter Calibration Class
-Gan Yang ©2022
+Gan Yang ©2022S
 """
 
 from param import Param
-from sde import EulerSimulation
-from fparam import FParam
+from sde import *
+from fparam import *
+import numpy as np
+import math
 
 class Calibration:
     """Calibration Simulation"""

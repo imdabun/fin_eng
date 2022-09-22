@@ -74,6 +74,23 @@ class LogEulerParam(EulerParam):
         return self._last
 
 
+class StochVolParam(EulerParam):
+    """A node of Euler's discretization of stochastic volatility process."""
+
+    name = "Stoch Vol Param"
+
+    def eval(self, cir):
+        # just return cached value if node is not dirty
+        if not self._dirty:
+            return self._last
+        # if not, calculate using SDE
+        S_t = self._S_t.eval(cir)
+        dt = self._dt.eval()
+        self._last = S_t + self._mu[S_t, self._t] * dt + self._v[S_t, self._t, cir] * math.sqrt(dt) * self._z
+        self._dirty = False
+        return self._last
+
+
 class EulerSimulation:
     """Wrapper for Euler's discretation Monte Carlo Simulation."""
 
@@ -103,6 +120,40 @@ class EulerSimulation:
             for j in range(self._T):
                 self.nodes[j+1].z = self.Z[j, i]
                 self.results[j+1, i] = self.nodes[j+1].eval()
+
+    def run_new(self, n_sims):
+        self._n = n_sims
+        self.Z = np.random.normal(size=[self._T, n_sims])
+        self.run_all()
+
+
+class StochVolSimulation(EulerSimulation):
+    """Wrapper for Euler's discretation Monte Carlo Simulation of a Stoch Vol Model."""
+
+    def __init__(self, mu, v, S_0, cir, T, dt, n_sims, rho=None):
+        """
+        mu      Lambda function input for Euler Param
+        v       Lambda function input for Euler Param
+        S_0     Constant param of Initial value
+        cir     EulerSimulation of the volatility process
+        T       Max time index
+        dt      Constant param input for Euler Param
+        n_sims  Number of simulations, >= 1
+        """
+        super().__init__(mu, v, S_0, T, dt, n_sims, param=StochVolParam)
+        self._cir = cir
+        for i in range(T):
+            cir.nodes[i].add_dependent(self.nodes[i+1])
+        if rho:
+            self.Z_corr = rho * cir.Z + math.sqrt(1 - rho * rho) * self.Z
+        else:
+            self.Z_corr = self.Z
+
+    def run_all(self):
+        for i in range(self._n):
+            for j in range(self._T):
+                self.nodes[j+1].z = self.Z_corr[j, i]
+                self.results[j+1, i] = self.nodes[j+1].eval(self._cir)
 
     def run_new(self, n_sims):
         self._n = n_sims
