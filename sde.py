@@ -144,10 +144,7 @@ class StochVolSimulation(EulerSimulation):
         self._cir = cir
         for i in range(T):
             cir.nodes[i].add_dependent(self.nodes[i+1])
-        if rho:
-            self.Z_corr = rho * cir.Z + math.sqrt(1 - rho * rho) * self.Z
-        else:
-            self.Z_corr = self.Z
+        self.Z_corr = rho * cir.Z + math.sqrt(1 - rho ** 2) * self.Z
 
     def run_all(self):
         for i in range(self._n):
