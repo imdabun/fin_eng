@@ -35,7 +35,7 @@ class Param:
         for dependent in self._dependents:
             dependent.make_dirty()
 
-    def eval(self, *args):
+    def eval(self,*args):
         """Evaluate parameter."""
         self._dirty = False
         return self.val
